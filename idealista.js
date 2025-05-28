@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Idealista Tracker Ultimate
+// @name         Idealista Tracker
 // @namespace    http://tampermonkey.net/
 // @version      8.4
 // @description  Rastreamento avançado com histórico completo e status de disponibilidade
@@ -163,18 +163,18 @@
     };
 
     const updatePropertyStatus = (id, isActive, status) => {
-        // Get all keys where `allDataCache[key][id]` exists
+        // 1. Get all keys where `allDataCache[key][id]` exists
         const validKeys = Object.keys(allDataCache).filter(
             key => allDataCache[key]?.[id]
         );
 
-        // Find the most recent `lastSeen` (or use current time if none exists)
+        // 2. Find the most recent `lastSeen` (or use current time if none exists)
         const mostRecentLastSeen = validKeys.reduce((latest, key) => {
             const entryLastSeen = allDataCache[key][id].lastSeen;
             return (entryLastSeen && entryLastSeen > latest) ? entryLastSeen : latest;
         }, ""); // Default: empty string (falsy)
 
-        // Update all valid entries
+        // 3. Update all valid entries
         validKeys.forEach(key => {
             allDataCache[key][id].lastSeen = mostRecentLastSeen || getCurrentISODate();
             allDataCache[key][id].isActive = isActive;
@@ -182,12 +182,12 @@
         });
     };
     // Function to find the oldest record of a property across all contexts
-    const findOldestPropertyRecord = (propertyId) => 
+    const findOldestPropertyRecord = (propertyId) =>
         Object.values(allDataCache)
             .flatMap(context => context[propertyId] || [])
             .reduce((oldest, record) => (
-                (!oldest || new Date(record.firstSeen) < new Date(oldest.firstSeen)) 
-                    ? record 
+                (!oldest || new Date(record.firstSeen) < new Date(oldest.firstSeen))
+                    ? record
                     : oldest
             ), null);
 
@@ -530,7 +530,7 @@
                                     console.log('Property completely removed');
                                     data[id].isActive = false;
                                     data[id].status = 'removed';
-                                } else { 
+                                } else {
                                     console.log(`Property ${id} exists but not in current search`);
                                     data[id].isActive = true;
                                     data[id].status = 'notlisted';
@@ -630,6 +630,43 @@
 
             document.body.appendChild(panel);
             setupTableSorting();
+            // Add draggable
+            (function enableDraggableIdealistaPanel() {
+                    const panel = document.getElementById('idealistaPanel');
+                    if (!panel) return;
+
+                    const header = document.getElementById('idealistaHeader');
+                    if (!header) return;
+
+                    panel.style.position = 'fixed';
+                    panel.style.top = '50px';
+                    panel.style.right = '20px';
+
+                    let isDragging = false;
+                    let offsetX = 0;
+                    let offsetY = 0;
+
+                    header.style.cursor = 'move';
+
+                    header.addEventListener('mousedown', (e) => {
+                        isDragging = true;
+                        offsetX = e.clientX - panel.offsetLeft;
+                        offsetY = e.clientY - panel.offsetTop;
+                        e.preventDefault();
+                    });
+
+                    document.addEventListener('mousemove', (e) => {
+                        if (isDragging) {
+                            panel.style.left = `${e.clientX - offsetX}px`;
+                            panel.style.top = `${e.clientY - offsetY}px`;
+                        }
+                    });
+
+                    document.addEventListener('mouseup', () => {
+                        isDragging = false;
+                    });
+            })();
+
         } catch (error) {
             console.error('Erro ao criar UI:', error);
         } finally {
