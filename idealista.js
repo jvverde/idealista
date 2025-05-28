@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Idealista Tracker
 // @namespace    http://tampermonkey.net/
-// @version      8.4
+// @version      8.5
 // @description  Rastreamento avançado com histórico completo e status de disponibilidade
 // @author       Isidro Vila Verde
 // @match        https://www.idealista.pt/*
@@ -218,156 +218,31 @@
 
     // UI Components
     GM_addStyle(`
-        #idealistaPanel {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 850px;
-            max-height: 90vh;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            z-index: 10000;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-        }
-        #idealistaHeader {
-            padding: 12px 15px;
-            background: #34495e;
-            color: white;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #idealistaTable {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            overflow-y: auto;
-            max-height: calc(90vh - 100px);
-        }
-        #idealistaTable th {
-            position: sticky;
-            top: 0;
-            background: #2c3e50;
-            color: white;
-            padding: 8px 10px;
-            text-align: left;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        #idealistaTable td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #ecf0f1;
-            vertical-align: top;
-        }
-        .price-cell {
-            font-weight: bold;
-            white-space: nowrap;
-        }
-        .price-up {
-            color: #e74c3c;
-        }
-        .price-down {
-            color: #27ae60;
-        }
-        .price-same {
-            color: #3498db;
-        }
-        .status-active-row {
-            background-color: #e8f5e9 !important;
-        }
-        .status-inactive-row {
-            background-color: #ffebee !important;
-        }
-        .sort-arrow {
-            margin-left: 5px;
-        }
-        .idealista-button {
-            background: #2c3e50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-left: 5px;
-        }
-        .idealista-button.danger {
-            background: #e74c3c;
-        }
-        .context-badge {
-            background: #9b59b6;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-left: 8px;
-        }
-        #idealistaFooter {
-            padding: 10px;
-            background: #f5f5f5;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        th[data-column].sorted-asc::after {
-            content: " ↑";
-            margin-left: 5px;
-            display: inline-block;
-        }
-        th[data-column].sorted-desc::after {
-            content: " ↓";
-            margin-left: 5px;
-            display: inline-block;
-        }
-
-        #idealistaPanel  {
-        /* Keep your existing styles */
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        width: 850px;
-        max-height: 90vh;
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        z-index: 10000;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        display: flex;
-        flex-direction: column;
-
-        /* Add these new styles for scroll */
-        overflow: hidden; /* Contain the scrolling */
-    }
-
-    #idealistaContent {
-        overflow-y: auto; /* Enable vertical scroll */
-        flex-grow: 1; /* Take remaining space */
-        padding: 0 5px; /* Optional: Add some padding */
-    }
-
-    /* Optional: Style the scrollbar */
-    #idealistaContent::-webkit-scrollbar {
-        width: 8px;
-    }
-    #idealistaContent::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-    #idealistaContent::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 4px;
-    }
-    #idealistaContent::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-    `);
+#idealistaPanel { position: fixed; top: 10px; right: 10px; width: 850px; max-height: 90vh; background: white; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 10000; font-family: 'Segoe UI', Arial, sans-serif; display: flex; flex-direction: column; overflow: hidden; resize: both; min-width: 400px; min-height: 300px; }
+#idealistaHeader { padding: 12px 15px; background: #34495e; color: white; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; cursor: move; user-select: none; }
+#idealistaContent { overflow-y: auto; flex-grow: 1; padding: 0 5px; }
+#idealistaTable { width: 100%; border-collapse: collapse; font-size: 13px; }
+#idealistaTable th { position: sticky; top: 0; background: #2c3e50; color: white; padding: 8px 10px; text-align: left; font-weight: 500; cursor: pointer; }
+#idealistaTable td { padding: 8px 10px; border-bottom: 1px solid #ecf0f1; vertical-align: top; }
+.price-cell { font-weight: bold; white-space: nowrap; }
+.price-up { color: #e74c3c; }
+.price-down { color: #27ae60; }
+.price-same { color: #3498db; }
+.status-active-row { background-color: #e8f5e9 !important; }
+.status-inactive-row { background-color: #ffebee !important; }
+.sort-arrow { margin-left: 5px; }
+.idealista-button { background: #2c3e50; color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12px; margin-left: 5px; }
+.idealista-button.danger { background: #e74c3c; }
+.context-badge { background: #9b59b6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-left: 8px; }
+#idealistaFooter { padding: 10px; background: #f5f5f5; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+th[data-column].sorted-asc::after { content: " ↑"; margin-left: 5px; display: inline-block; }
+th[data-column].sorted-desc::after { content: " ↓"; margin-left: 5px; display: inline-block; }
+#idealistaPanel::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: linear-gradient(135deg, #ccc 0%, #ccc 50%, transparent 50%); cursor: nwse-resize; }
+#idealistaContent::-webkit-scrollbar { width: 8px; height: 8px; }
+#idealistaContent::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+#idealistaContent::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+#idealistaContent::-webkit-scrollbar-thumb:hover { background: #555; }
+`);
 
     const setupTableSorting = () => {
         const table = document.getElementById('idealistaTable');
